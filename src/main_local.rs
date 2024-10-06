@@ -2,11 +2,12 @@ use axum::*;
 use dotenv::*;
 use serde::{Deserialize, Serialize, Serializer};
 use sqlx::{PgPool, FromRow};
-use std::{fs::File, io::{self, BufWriter, Read}, net::SocketAddr};
+use std::{fs::File, io::{self, BufWriter, Read, Write}, net::SocketAddr};
 use tokio::net::TcpStream;
 use dotenv::dotenv;
 use std::env;
 use bcrypt::{hash, DEFAULT_COST};
+use std::fs;
 
 
 
@@ -76,10 +77,22 @@ fn begin_local_server() {
     load_map(filename);
 }
 
-fn load_map(f_name: &str) {
-    let mut buf = Vec::new();
-    let mut file = File::open(f_name).unwrap();
-    let read_data = File::read_to_end(&mut file, & mut buf);
+fn load_map(f_name: &str) -> DeviceMap {
+    let path = "./map_data.json";
+        let file_res = File::open(path);
+        let file = match file_res {
+            Ok(value) => value,
+            Err(error) => panic!("Error happaned: {}!", error)
+        };
+
+        let data_res = fs::read_to_string(path);
+        let data = match data_res {
+            Ok(value) => value,
+            Err(err) => panic!("{}",err)
+        };
+        
+        let result_struct = serde_json::from_str(&data.as_str()).unwrap();
+        return result_struct;
 }
 /// .
 ///
@@ -89,8 +102,10 @@ fn load_map(f_name: &str) {
 fn save_map_local_json(data: DeviceMap) {
     let _buf: Vec<u8> = Vec::new();
     let path = "./map_data.json";
-    let write_file = File::create_new(path).expect("cannot create file");
-    data_for_write = data.serialize();
+    let mut write_file = File::create(path).expect("cannot create file");
+    let res = serde_json::to_string(&data).unwrap();
+    let byte_res = res.as_bytes();
+    let _ = write_file.write(byte_res);
 
     // let data = Devices.serialize(write_file);
     
@@ -102,6 +117,8 @@ fn begin_network_server() {
 
 #[cfg(test)]
 mod tests{
+    use std::fs;
+
     use super::*;
     #[test]
     fn test_save_data() {
@@ -115,6 +132,13 @@ mod tests{
 
         devices.devices.push(dev);
         save_map_local_json(devices);
+    }
+
+    #[test]
+    fn load_data() {
+        let path = "./map_data.json";
+        let map = load_map(path);
+        println!("{:?}", map)
     }
 }
 
