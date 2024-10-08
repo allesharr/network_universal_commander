@@ -8,50 +8,19 @@ use dotenv::dotenv;
 use std::env;
 use bcrypt::{hash, DEFAULT_COST};
 use std::fs;
-
+use crate::models::basic::*;
+use crate::router_init::*;
 
 
 static mut Devices: DeviceMap = DeviceMap {
     devices: Vec::new()
 };
 
-#[derive(Serialize, Deserialize, Default,Debug, FromRow)]
-struct DeviceMap {
-    devices:Vec<Device>
-}
-    
-// Структура для устройства
-#[derive(Serialize, Deserialize, FromRow, Default, Debug)]
-struct Device {
-    ip: String,
-    open_ports: Vec<i32>,
-    //размещение на карте
-    x_param: i32,
-    y_param:i32,
-    admin_username: String,
-    admin_password_hash: String,
-}
-
-impl Device {
-    fn x_param(&self) -> i32 {
-        self.x_param
-    }
-    
-    fn y_param(&self) -> i32 {
-        self.y_param
-    }
-}
-// Структура для получаемых данных
-#[derive(Deserialize, Default, Debug)]
-struct DevicePayload {
-    ip: String,
-    admin_username: String,
-    admin_password: String,
-}
 
 pub fn start() {
     start_server();
 }
+
 #[tokio::main]
 pub async fn start_server() {
     dotenv::dotenv().ok();
@@ -74,7 +43,8 @@ pub async fn start_server() {
 
 fn begin_local_server() {
     let filename = "map_data.json";
-    load_map(filename);
+    let map = load_map(filename);
+    
 }
 
 fn load_map(f_name: &str) -> DeviceMap {
@@ -82,7 +52,9 @@ fn load_map(f_name: &str) -> DeviceMap {
         let file_res = File::open(path);
         let file = match file_res {
             Ok(value) => value,
-            Err(error) => panic!("Error happaned: {}!", error)
+            Err(_error) => {
+                File::create(path).unwrap() // Create and return the new file
+            },
         };
 
         let data_res = fs::read_to_string(path);

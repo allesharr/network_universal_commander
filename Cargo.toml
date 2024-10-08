@@ -14,3 +14,6 @@ tower = "0.5.1"
 dotenv = "0.15"
 serde_urlencoded = "0.7"
 once_cell = "1.18.0"
+log = "0.4"
+
+actix-web = "4"
