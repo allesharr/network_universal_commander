@@ -17,12 +17,12 @@ static mut Devices: DeviceMap = DeviceMap {
 };
 
 
-pub fn start() {
-    start_server();
+pub fn start(map: DeviceMap) {
+    start_server(map);
 }
 
 #[tokio::main]
-pub async fn start_server() {
+async fn start_server(map: DeviceMap) {
     dotenv::dotenv().ok();
     let work_status = env::var("WORK_STATUS").unwrap_or(String::from("local"));
     let str_status = work_status.as_str();
@@ -30,10 +30,10 @@ pub async fn start_server() {
 
     match str_status {
         "local" => {
-            begin_local_server()
+            begin_local_server(map)
         }
         "network" => {
-            begin_network_server()
+            begin_network_server(map)
         }
         _ => {
 
@@ -41,10 +41,11 @@ pub async fn start_server() {
     }
 }
 
-fn begin_local_server() {
+fn begin_local_server(map: DeviceMap) {
     let filename = "map_data.json";
     let map = load_map(filename);
-    
+
+
 }
 
 fn load_map(f_name: &str) -> DeviceMap {
@@ -83,7 +84,7 @@ fn save_map_local_json(data: DeviceMap) {
     
 }
 
-fn begin_network_server() {
+fn begin_network_server(map: DeviceMap) {
 
 }
 

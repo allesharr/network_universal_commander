@@ -130,7 +130,7 @@ mod server_local;
 mod models;
 use server_local::*;
 fn main() {
-    main_local::start();
+    // main_local::start();
 }
 
 #[cfg(test)]

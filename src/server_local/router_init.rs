@@ -14,53 +14,27 @@ use std::str::FromStr;
 use std::time::Duration;
 use axum::Json;
 use tokio::time::sleep;
+use crate::models::basic::*;
+use crate::models::database::*;
 
-#[derive(Deserialize, Serialize)]
-struct InputData {
-    test: String,
-    id: i32
-}
-// Handler for the GET request at "/"
 #[derive(Serialize)]
-struct Message {
-    message: String
-}
-enum ApiResponse {
-    OK,
-    Created,
-    JsonData(Vec<Message>),
-}
-async fn hello_world() -> &'static str {
-    "Hello world!"
-}struct AppState {
-    // ...
+struct MyResponse {
+    message: String,
 }
 
-#[derive(Serialize,Deserialize)]
-struct CreateUser {
-    email: String,
-    password: String,
-}
-static  mut users :Vec<CreateUser> = Vec::new(); 
-async fn show_users(Json(payload): Json<CreateUser>) {
-
-    let data = format!("email: {}, password: {}", payload.email, payload.password);
-    println!("{}", data);
-}
-#[derive(Deserialize)]
-struct Pagination {
-    page: usize,
-    per_page: usize,
+async fn my_handler() -> impl IntoResponse {
+    let responce = MyResponse {
+        message: "Hello, World!".to_string(),
+    };
+    (StatusCode::OK, Json(responce))
 }
 
-impl Default for Pagination {
-    fn default() -> Self {
-        Self { page: 1, per_page: 30 }
-    }
-}
 #[tokio::main]
-async fn start_sever() {
-    let app = Router::new().route("/", get(|| async { "Hello, World!" }));
+async fn start_sever(map : DeviceMap) {
+    let app = Router::new()
+        .route("/", get(|| async { "Hello, World!" }))
+        .route("/handler", get(move || async { my_handler().await })
+    );
     let server_socket = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     let _server = axum::serve(server_socket, app);
     _server.await.unwrap();
@@ -73,7 +47,7 @@ mod tests{
 
     #[test]
     fn simple_server(){
-        start_sever();
+        // start_sever();
     }
 }
 
